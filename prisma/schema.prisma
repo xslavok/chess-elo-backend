@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String       
+  fideId      String       @unique 
+  name        String?      
+  rating      Int          @default(1500)
+  title       String?      
+  kFactor     Int          @default(20)
+  tournaments Tournament[] 
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  name      String
+  date      DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  matches   Match[]  
+  pgn       String?  
+}
+
+model Match {
+  id            String     @id @default(uuid())
+  tournamentId  String
+  tournament    Tournament @relation(fields: [tournamentId], references: [id])
+  opponentElo   Int
+  opponentTitle String?    // <--- NOVA KOLONA ZA TITULU PROTIVNIKA
+  result        Float      
+  ratingChange  Int
+}
