@@ -38,3 +38,12 @@ model Match {
   result        Float      
   ratingChange  Int
 }
+
+// Pomoćna tabela za zvaničnu FIDE listu (Balkan)
+model FidePlayer {
+  fideId  String  @id
+  name    String
+  rating  Int     @default(1500)
+  title   String?
+  fed     String? 
+}
