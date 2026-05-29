@@ -1,9 +1,14 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { FideService } from '../fide/fide.service'; // Uvozimo naš novi servis! (Putanja možda zavisi od tvog foldera, obično je '../fide/fide.service')
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  // Povezujemo FideService pored PrismaService-a
+  constructor(
+    private prisma: PrismaService,
+    private fideService: FideService 
+  ) {}
 
   async registracija(podaci: any) {
     // 1. Provera da li email već postoji
@@ -27,13 +32,18 @@ export class AuthService {
       }
       
       fideId = podaci.fideId;
-      /* Mesto za pravi FIDE API fetch. 
-         Pošto zvanični API ne postoji, ovde ćemo za sada simulirati 
-         da je svaki registrovani FIDE igrač zapravo FIDE Majstor (FM).
-      */
-      ime = podaci.name || 'FIDE Takmičar'; 
-      rejting = 2350;
-      titula = 'FM';
+      
+      // PRAVA MAGIJA: Zovemo naš hibridni FIDE scraper/bazu!
+      const fidePodaci = await this.fideService.getPlayerProfile(fideId);
+
+      if (!fidePodaci) {
+        throw new HttpException('Nije moguće pronaći igrača sa ovim FIDE ID-em.', HttpStatus.BAD_REQUEST);
+      }
+
+      // Prepisujemo podatke koje nam je vratio scraper/baza
+      ime = fidePodaci.name; 
+      rejting = fidePodaci.rating;
+      titula = fidePodaci.title;
       kFaktor = 20;
     }
 
