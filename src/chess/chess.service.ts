@@ -10,11 +10,10 @@ export class ChessService {
       data: {
         name: data.name,
         userId: data.userId,
-        pgn: data.pgn,
+        pgn: data.pgn, // <--- BELEŽIMO PGN U BAZU
         matches: {
           create: data.matches.map((m: any) => ({
             opponentElo: m.opponentElo,
-            opponentTitle: m.opponentTitle, // <--- Upisujemo titulu u bazu
             result: m.result,
             ratingChange: m.ratingChange,
           })),
@@ -27,7 +26,7 @@ export class ChessService {
     return this.prisma.tournament.findMany({
       where: { userId },
       include: { matches: true },
-      orderBy: { date: 'desc' },
+      orderBy: { date: 'desc' }, // Automatski sortira od najnovijeg
     });
   }
 

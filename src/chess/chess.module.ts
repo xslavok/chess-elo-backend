@@ -1,37 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { ChessService } from './chess.service';
+import { ChessController } from './chess.controller';
 import { PrismaService } from '../prisma.service';
 
-@Injectable()
-export class ChessService {
-  constructor(private prisma: PrismaService) {}
-
-  async sacuvajTurnir(data: any) {
-    return this.prisma.tournament.create({
-      data: {
-        name: data.name,
-        userId: data.userId,
-        pgn: data.pgn, // <--- BELEŽIMO PGN U BAZU
-        matches: {
-          create: data.matches.map((m: any) => ({
-            opponentElo: m.opponentElo,
-            result: m.result,
-            ratingChange: m.ratingChange,
-          })),
-        },
-      },
-    });
-  }
-
-  async dobaviIstoriju(userId: string) {
-    return this.prisma.tournament.findMany({
-      where: { userId },
-      include: { matches: true },
-      orderBy: { date: 'desc' }, // Automatski sortira od najnovijeg
-    });
-  }
-
-  async obrisiTurnir(id: string) {
-    await this.prisma.match.deleteMany({ where: { tournamentId: id } });
-    return this.prisma.tournament.delete({ where: { id } });
-  }
-}
+@Module({
+  controllers: [ChessController],
+  providers: [ChessService, PrismaService],
+  exports: [ChessService] // <-- OVO JE ISPRAVKA! Izvozimo Servis, a ne Modul.
+})
+export class ChessModule {}
